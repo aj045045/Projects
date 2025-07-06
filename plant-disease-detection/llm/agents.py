@@ -1,48 +1,103 @@
-from crewai import Agent, Task, Crew
+# from crewai import Agent, Task, Crew, LLM
 
-# Agent: Disease Classifier
-classifier_agent = Agent(
-    role="Plant Disease Classifier",
-    goal="Classify plant disease from an image",
-    backstory="An AI trained to detect plant diseases using deep learning.",
-    tools=[],
-    allow_delegation=False
-)
+# def run_diagnosis_crew(predicted_disease: str):
+#     try:
+#         # Setup LLM
+#         llm = LLM(model="ollama/mistral:7b", base_url="http://localhost:11434")
 
-# Agent: Solution Expert
-solution_agent = Agent(
-    role="Plant Pathology Expert",
-    goal="Provide treatment and prevention for plant diseases",
-    backstory="An AI expert in agriculture and plant pathology.",
-    tools=[],
-    allow_delegation=False
-)
+#         # Define the only Agent: Plant Pathology Expert
+#         disease_explainer = Agent(
+#             role="Plant Pathology Expert",
+#             goal="Explain the disease in a way farmers understand",
+#             backstory="A botanist with years of experience in plant disease diagnosis. You are great at explaining scientific concepts in clear, simple, and visually structured Markdown format.",
+#             llm=llm
+#         )
 
-# Task 1: Classification
-classification_task = Task(
-    description="Analyze the input image and identify the plant disease.",
-    expected_output="The name of the plant disease.",
-    agent=classifier_agent
-)
+#         # Define the only Task
+#         task = Task(
+#             description=(
+#                 "Write a detailed, farmer-friendly explanation of the plant disease '{{predicted_disease}}'. "
+#                 "Structure the output using Markdown formatting. Include sections like title, symptoms, causes, "
+#                 "environmental triggers, and prevention or treatment tips. Use bullet points, bold text, and headings "
+#                 "where appropriate."
+#             ),
+#             expected_output=(
+#                 "A well-formatted Markdown explanation including:\n"
+#                 "- Disease title with emoji\n"
+#                 "- Simple explanation\n"
+#                 "- Symptoms list\n"
+#                 "- Causes\n"
+#                 "- When it usually occurs\n"
+#                 "- Prevention and treatment steps\n"
+#             ),
+#             agent=disease_explainer
+#         )
 
-# Task 2: Solution
-solution_task = Task(
-    description="Based on the disease name, generate a solution including treatment and prevention.",
-    expected_output="Detailed treatment plan and prevention strategy.",
-    agent=solution_agent
-)
+#         # Create and run the Crew
+#         crew = Crew(
+#             agents=[disease_explainer],
+#             tasks=[task],
+#             verbose=True
+#         )
 
-# Crew
-crew = Crew(
-    agents=[classifier_agent, solution_agent],
-    tasks=[classification_task, solution_task],
-    verbose=True
-)
+#         # Run the task
+#         response = crew.kickoff(inputs={"predicted_disease": predicted_disease})
 
-# Simulated flow (replace with actual image input/output integration)
-def run_pipeline(image_path):
-    disease_name = predict_disease(image_path)
-    solution = get_solution(disease_name)
-    
-    print(f"[DISEASE] {disease_name}")
-    print(f"[SOLUTION]\n{solution}")
+#         # Return Markdown-formatted explanation
+#         return f"""### 🧪 Disease Explanation\n\n{response}"""
+
+#     except Exception as e:
+#         return f"❌ ERROR during diagnosis execution:\n{str(e)}"
+
+
+import streamlit as st
+from crewai import Agent, Task, Crew, LLM
+
+@st.cache_resource
+def get_disease_explainer():
+    llm = LLM(model="ollama/mistral:7b", base_url="http://localhost:11434")
+
+    agent = Agent(
+        role="Plant Pathology Expert",
+        goal="Explain the disease in a way farmers understand",
+        backstory="A botanist with years of experience...",
+        llm=llm
+    )
+
+    task = Task(
+        description=(
+            "Write a detailed, farmer-friendly explanation of the plant disease '{{predicted_disease}}'..."
+        ),
+        expected_output=(
+            "A well-formatted Markdown explanation including:\n"
+            "- Disease title with emoji\n"
+            "- Simple explanation\n"
+            "- Symptoms list\n"
+            "- Causes\n"
+            "- When it usually occurs\n"
+            "- Prevention and treatment steps\n"
+        ),
+        agent=agent
+    )
+
+    return agent, task
+
+@st.cache_resource
+def get_crew():
+    agent, task = get_disease_explainer()
+    return Crew(agents=[agent], tasks=[task], verbose=False)
+
+def run_diagnosis_crew(predicted_disease: str):
+    try:
+        crew = get_crew()
+        response = crew.kickoff(inputs={"predicted_disease": predicted_disease})
+
+        # Wrap in a styled div
+        return f"""
+        <div style="background-color:#e6ffe6; padding:20px; border-radius:10px;">
+            <h3>🧪 Disease Explanation</h3>
+            {response}
+        </div>
+        """
+    except Exception as e:
+        return f"<div style='background-color:#ffe6e6; padding:20px; border-radius:10px;'>❌ ERROR: {str(e)}</div>"

@@ -4,22 +4,19 @@ import time
 import streamlit as st
 
 # Add the parent directory to sys.path to import local modules
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from llm.agents import run_diagnosis_crew
 from llm.model import predict_disease_tf
 
 # Configure Streamlit page
-st.set_page_config(
-    page_title="Plant Disease Advisor",
-    layout="wide",
-    page_icon="🌿"
-)
+st.set_page_config(page_title="Plant Disease Advisor", layout="wide", page_icon="🌿")
 
 # --- Sidebar Info ---
 with st.sidebar:
     st.title("🧠 About This App")
-    st.markdown("""
+    st.markdown(
+        """
     This **AI-powered plant disease advisor** helps farmers, researchers, and hobbyists detect diseases in crops through simple image uploads. 
     
     Built with:
@@ -32,19 +29,23 @@ with st.sidebar:
     📚 Dataset: [PlantVillage](https://www.kaggle.com/datasets/emmarex/plantdisease)
 
     🔗 Source: [Kaggle Notebook](https://www.kaggle.com/code/aj045045/plant-predication)
-    """)
+    """
+    )
 
 # --- App Title and Subtitle ---
 st.title("🌿 Plant Disease Diagnosis Assistant")
-st.markdown("""
+st.markdown(
+    """
 Upload a high-quality image of a **plant leaf**, and let our AI detect any potential diseases and provide expert suggestions for treatment.
 
 This tool is designed to assist farmers, researchers, and agritech enthusiasts in early disease detection and management.
-""")
+"""
+)
 
 # --- Features Section ---
 with st.expander("🔍 What Can This Tool Do?"):
-    st.markdown("""
+    st.markdown(
+        """
     ✅ Detect diseases from plant leaf images  
     ✅ Generate AI-guided solutions using natural language  
     ✅ Process images in real-time  
@@ -57,10 +58,13 @@ with st.expander("🔍 What Can This Tool Do?"):
     - 🍇 Grape Black Rot
     - 🥔 Potato Early Blight
     - 🍅 Tomato Mosaic Virus
-    """)
+    """
+    )
 
 # --- File uploader ---
-uploaded_file = st.file_uploader("📤 Upload a plant leaf image", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader(
+    "📤 Upload a plant leaf image", type=["jpg", "png", "jpeg"]
+)
 
 if uploaded_file is not None:
     st.image(uploaded_file, caption="🖼️ Uploaded Leaf Image", use_container_width=False)
@@ -82,7 +86,8 @@ else:
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("""
+st.markdown(
+    """
 🧠 **How it works:**
 
 1. You upload a plant leaf image.
@@ -93,4 +98,5 @@ st.markdown("""
 ---
 
 💬 For feedback, feature requests, or contributions, please reach out or check the [GitHub repo](https://github.com/aj045045/project).
-""")
+"""
+)
